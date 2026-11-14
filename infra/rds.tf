@@ -28,11 +28,12 @@ resource "aws_db_instance" "primary" {
 
 # Read Replica
 resource "aws_db_instance" "replica" {
-  identifier          = "${var.project_name}-replica"
-  replicate_source_db = aws_db_instance.primary.identifier
-  instance_class      = var.db_instance_class
-  publicly_accessible = false
-  skip_final_snapshot = true
+  identifier             = "${var.project_name}-replica"
+  replicate_source_db    = aws_db_instance.primary.identifier
+  instance_class         = var.db_instance_class
+  vpc_security_group_ids = [aws_security_group.rds.id]
+  publicly_accessible    = false
+  skip_final_snapshot    = true
 
   tags = { Name = "${var.project_name}-replica" }
 }
