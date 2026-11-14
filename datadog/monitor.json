@@ -1,0 +1,21 @@
+{
+  "name": "RDS Primary CPU Utilization High",
+  "type": "metric alert",
+  "query": "avg(last_5m):avg:aws.rds.cpuutilization{dbinstanceidentifier:ecommerce-primary} > 80",
+  "message": "{{#is_alert}}\n🚨 **RDS Primary CPU is high!**\n\nThe primary RDS instance `ecommerce-primary` CPU utilization has exceeded **80%** over the last 5 minutes.\n\nPlease investigate immediately — possible causes include:\n- A sudden spike in write queries\n- Missing indexes on frequently accessed tables\n- Long-running transactions\n\n@ops-team\n{{/is_alert}}\n\n{{#is_recovery}}\n✅ RDS Primary CPU has recovered to normal levels.\n{{/is_recovery}}",
+  "tags": [
+    "service:ecommerce-api",
+    "env:production",
+    "team:backend"
+  ],
+  "options": {
+    "thresholds": {
+      "critical": 80
+    },
+    "notify_no_data": false,
+    "renotify_interval": 0,
+    "evaluation_delay": 60,
+    "include_tags": true,
+    "new_host_delay": 300
+  }
+}
