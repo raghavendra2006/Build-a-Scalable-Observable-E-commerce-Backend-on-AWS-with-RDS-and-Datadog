@@ -1,0 +1,122 @@
+{
+  "title": "E-commerce Backend - Overview",
+  "description": "Single-pane-of-glass view for the e-commerce API, RDS primary, and read replica.",
+  "widgets": [
+    {
+      "id": 1,
+      "definition": {
+        "title": "RDS CPU Utilization (Primary vs Replica)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "avg:aws.rds.cpuutilization{dbinstanceidentifier:ecommerce-primary}",
+            "display_type": "line",
+            "style": { "palette": "warm" }
+          },
+          {
+            "q": "avg:aws.rds.cpuutilization{dbinstanceidentifier:ecommerce-replica}",
+            "display_type": "line",
+            "style": { "palette": "cool" }
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "definition": {
+        "title": "RDS Database Connections (Primary vs Replica)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "avg:aws.rds.database_connections{dbinstanceidentifier:ecommerce-primary}",
+            "display_type": "line",
+            "style": { "palette": "warm" }
+          },
+          {
+            "q": "avg:aws.rds.database_connections{dbinstanceidentifier:ecommerce-replica}",
+            "display_type": "line",
+            "style": { "palette": "cool" }
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "definition": {
+        "title": "RDS Read IOPS (Primary vs Replica)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "avg:aws.rds.read_iops{dbinstanceidentifier:ecommerce-primary}",
+            "display_type": "line",
+            "style": { "palette": "warm" }
+          },
+          {
+            "q": "avg:aws.rds.read_iops{dbinstanceidentifier:ecommerce-replica}",
+            "display_type": "line",
+            "style": { "palette": "cool" }
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "definition": {
+        "title": "Application Requests per Second (APM)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:trace.ecommerce-api.request.hits{service:ecommerce-api}.as_rate()",
+            "display_type": "bars",
+            "style": { "palette": "dog_classic" }
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "definition": {
+        "title": "Application Request Latency p95 (APM)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "avg:trace.ecommerce-api.request.duration.by.service.95p{service:ecommerce-api}",
+            "display_type": "line",
+            "style": { "palette": "purple" }
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "definition": {
+        "title": "Custom Metric - products.requests.total",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:products.requests.total{*}.as_count()",
+            "display_type": "bars",
+            "style": { "palette": "green" }
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "definition": {
+        "title": "Custom Metric - db.query.duration_ms",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "avg:db.query.duration_ms{*}",
+            "display_type": "line",
+            "style": { "palette": "orange" }
+          }
+        ]
+      }
+    }
+  ],
+  "layout_type": "ordered",
+  "notify_list": [],
+  "reflow_type": "fixed"
+}
