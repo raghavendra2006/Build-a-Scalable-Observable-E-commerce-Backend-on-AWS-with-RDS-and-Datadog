@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  # PostgreSQL (local development)
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-ecommerce}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./seeds/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # E-commerce API
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      datadog-agent:
+        condition: service_started
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      DB_HOST: db
+      DB_WRITER_HOST: ${DB_WRITER_HOST:-db}
+      DB_READER_HOST: ${DB_READER_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-ecommerce}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DD_AGENT_HOST: datadog-agent
+      DD_SERVICE: ${DD_SERVICE:-ecommerce-api}
+      DD_ENV: ${DD_ENV:-development}
+      DD_LOGS_INJECTION: ${DD_LOGS_INJECTION:-true}
+      DD_PROFILING_ENABLED: ${DD_PROFILING_ENABLED:-true}
+      DD_TRACE_ENABLED: "true"
+      DD_DOGSTATSD_PORT: "8125"
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "ecommerce-api"}]'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # Datadog Agent
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7
+    restart: unless-stopped
+    environment:
+      DD_API_KEY: ${DD_API_KEY}
+      DD_SITE: ${DD_SITE:-datadoghq.com}
+      DD_APM_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+      DD_PROCESS_AGENT_ENABLED: "true"
+      DD_CONTAINER_EXCLUDE: "name:datadog-agent"
+    ports:
+      - "8125:8125/udp"
+      - "8126:8126"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+
+volumes:
+  pgdata:
