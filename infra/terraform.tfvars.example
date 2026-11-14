@@ -1,0 +1,8 @@
+aws_region           = "us-east-1"
+project_name         = "ecommerce"
+db_name              = "ecommerce"
+db_username          = "postgres"
+db_password          = "CHANGE_ME_secure_password_123"
+db_instance_class    = "db.t3.micro"
+db_engine_version    = "16.4"
+db_allocated_storage = 20
